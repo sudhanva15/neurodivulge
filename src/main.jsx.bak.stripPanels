@@ -1,0 +1,29 @@
+import { Analytics } from "@vercel/analytics/react";
+import { SupabaseProvider } from "./supabase/useSupabase";
+import { initPostHog } from "./analytics/posthog";
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+import './sw-register' // safe: SW only registers if VITE_ENABLE_SW === 'true'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <Analytics />
+  <SupabaseProvider>
+    <SupabaseProvider><SupabaseProvider><SupabaseProvider>
+  <>
+    <SupabaseProvider>
+  <>
+    <App />
+    <NDPanelStrip />
+  </>
+</SupabaseProvider>
+    <NDPanelStrip />
+  </>
+</SupabaseProvider></SupabaseProvider></SupabaseProvider>
+  </SupabaseProvider>
+  </React.StrictMode>
+)
+/* Init PostHog (env-gated) */
+initPostHog();

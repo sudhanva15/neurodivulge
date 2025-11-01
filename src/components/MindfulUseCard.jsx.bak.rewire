@@ -1,4 +1,7 @@
+import VillagePanel from "../components/VillagePanel";
+import EnvironmentPresets from "../components/EnvironmentPresets";
 import "../styles/env-presets.css";
+import CloudSyncCard from "../components/CloudSyncCard";
 import FocusAid from "../components/FocusAid";
 import React, { useEffect, useState } from "react";
 import { useSupabase } from "../supabase/useSupabase";

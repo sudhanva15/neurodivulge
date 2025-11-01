@@ -1,5 +1,7 @@
-// ND build marker
-console.info('ND build:', '__ND_BUILD_ID__', '2025-11-01T18:32:52Z-nd-hotfix');
+import EnvironmentPresets from "./components/EnvironmentPresets";
+import CloudSyncCard from "./components/CloudSyncCard";
+import VillagePanel from "./components/VillagePanel";
+import AuthCard from "./components/AuthCard";
 import { ND_BUILD } from "./version";
 import { useHeartbeat } from "./useHeartbeat";
 import FriendsPanel from "./FriendsPanel.jsx";
@@ -203,7 +205,7 @@ export default function App() {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i)).reduce(
       (n, d) => n + (map[d.toISOString().slice(0, 10)] ? 1 : 0),
       0
-  );
+    );
   };
 
   // Hydration
@@ -255,7 +257,17 @@ export default function App() {
               Reset Week 1
             </button>
   
-  {/* NeuroDivulge: community + sync + presets */}  {/* NeuroDivulge panels (auth + village + sync + presets) */}          </div>
+  {/* NeuroDivulge: community + sync + presets */}
+  <AuthCard />
+  <VillagePanel />
+  <CloudSyncCard />
+  <EnvironmentPresets />
+  {/* NeuroDivulge panels (auth + village + sync + presets) */}
+  <AuthCard />
+  <VillagePanel />
+  <CloudSyncCard />
+  <EnvironmentPresets />
+          </div>
         </header>
 
         <div className="rounded-2xl border bg-white">
@@ -820,5 +832,6 @@ function SurveyGate(){
   return <SurveyModal onDone={() => setOpen(false)} />;
 }
 
+
 {/* Build stamp (debug) */}
-  <div style={{position:"fixed",right:10,bottom:8,opacity:.4,fontSize:11}}>ND {ND_BUILD}</div>
+<div style={{position:"fixed",right:10,bottom:8,opacity:.4,fontSize:11}}>ND {ND_BUILD}</div>

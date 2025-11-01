@@ -1,0 +1,39 @@
+### grep: JSX usage
+src/App.jsx.bak.autoheal:257:<AuthCard
+src/App.jsx.bak.autoheal:258:<VillagePanel
+src/App.jsx.bak.autoheal:259:<CloudSyncCard
+src/App.jsx.bak.autoheal:260:<EnvironmentPresets
+src/App.jsx.bak.autoheal:262:<AuthCard
+src/App.jsx.bak.autoheal:263:<VillagePanel
+src/App.jsx.bak.autoheal:264:<CloudSyncCard
+src/App.jsx.bak.autoheal:265:<EnvironmentPresets
+src/components/MindfulUseCard.jsx:104:<CloudSyncCard
+src/components/MindfulUseCard.jsx:107:<EnvironmentPresets
+src/components/MindfulUseCard.jsx:110:<VillagePanel
+src/components/MindfulUseCard.jsx.bak.rewire:107:<CloudSyncCard
+src/components/MindfulUseCard.jsx.bak.rewire:110:<EnvironmentPresets
+src/components/MindfulUseCard.jsx.bak.rewire:113:<VillagePanel
+src/components/MindfulUseCard.jsx.bak.rescue:104:<CloudSyncCard
+src/components/MindfulUseCard.jsx.bak.rescue:107:<EnvironmentPresets
+src/components/MindfulUseCard.jsx.bak.rescue:110:<VillagePanel
+src/App.jsx:261:<AuthCard
+src/App.jsx:262:<VillagePanel
+src/App.jsx:263:<CloudSyncCard
+src/App.jsx:264:<EnvironmentPresets
+src/App.jsx:266:<AuthCard
+src/App.jsx:267:<VillagePanel
+src/App.jsx:268:<CloudSyncCard
+src/App.jsx:269:<EnvironmentPresets
+src/App.jsx.bak.rescue:257:<AuthCard
+src/App.jsx.bak.rescue:258:<VillagePanel
+src/App.jsx.bak.rescue:259:<CloudSyncCard
+src/App.jsx.bak.rescue:260:<EnvironmentPresets
+
+### grep: imports
+src/components/MindfulUseCard.jsx.bak.rewire:1:import VillagePanel from "../components/VillagePanel
+src/components/MindfulUseCard.jsx.bak.rewire:2:import EnvironmentPresets from "../components/EnvironmentPresets
+src/components/MindfulUseCard.jsx.bak.rewire:4:import CloudSyncCard from "../components/CloudSyncCard
+src/App.jsx:1:import EnvironmentPresets from "./components/EnvironmentPresets
+src/App.jsx:2:import CloudSyncCard from "./components/CloudSyncCard
+src/App.jsx:3:import VillagePanel from "./components/VillagePanel
+src/App.jsx:4:import AuthCard from "./components/AuthCard

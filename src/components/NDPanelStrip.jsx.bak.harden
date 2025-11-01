@@ -1,0 +1,17 @@
+import React from "react";
+import { default as AuthCard } from "./AuthCard";
+import { default as VillagePanel } from "./VillagePanel";
+import { default as CloudSyncCard } from "./CloudSyncCard";
+import { default as EnvironmentPresets } from "./EnvironmentPresets";
+
+export default function NDPanelStrip() {
+  return (
+    <div style={{ marginTop: 16, marginBottom: 24 }}>
+      {/* ND: auth + village + sync + presets */}
+      <AuthCard />
+      <VillagePanel />
+      <CloudSyncCard />
+      <EnvironmentPresets />
+    </div>
+  );
+}
