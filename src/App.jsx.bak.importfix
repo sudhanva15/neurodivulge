@@ -1,3 +1,7 @@
+import MindfulUseCard from "../components/MindfulUseCard";
+import AchievementsPanel from "../components/AchievementsPanel";
+import ReflectionLauncher from "../components/ReflectionLauncher";
+import CommunityStream from "../components/CommunityStream";
 import { useHeartbeat } from "./useHeartbeat";
 import FriendsPanel from "./FriendsPanel.jsx";
 import "./sw-register";

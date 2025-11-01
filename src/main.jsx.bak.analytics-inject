@@ -9,7 +9,6 @@ import './sw-register' // safe: SW only registers if VITE_ENABLE_SW === 'true'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Analytics />
   <SupabaseProvider>
     <App />
   </SupabaseProvider>

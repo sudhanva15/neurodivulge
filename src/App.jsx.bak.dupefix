@@ -1,3 +1,7 @@
+import MindfulUseCard from "../components/MindfulUseCard";
+import AchievementsPanel from "../components/AchievementsPanel";
+import ReflectionLauncher from "../components/ReflectionLauncher";
+import CommunityStream from "../components/CommunityStream";
 import { useHeartbeat } from "./useHeartbeat";
 import FriendsPanel from "./FriendsPanel.jsx";
 import "./sw-register";
@@ -83,6 +87,7 @@ const STAGES = [
 
 export default function App() {
   const [showSurvey, setShowSurvey] = useState(!localStorage.getItem("nd.survey"));
+  useHeartbeat({ email: "sudhanvakashyap@example.com", status: "ok" });  const [showSurvey, setShowSurvey] = useState(!localStorage.getItem("nd.survey"));
   // App meta
   const [startDate, setStartDate] = useLocalStorage("nd.startDate", todayKey());
   const [activeTab, setActiveTab] = useLocalStorage("nd.activeTab", "rituals");

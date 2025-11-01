@@ -1,3 +1,7 @@
+import MindfulUseCard from "./components/MindfulUseCard";
+import AchievementsPanel from "./components/AchievementsPanel";
+import ReflectionLauncher from "./components/ReflectionLauncher";
+import CommunityStream from "./components/CommunityStream";
 import { useHeartbeat } from "./useHeartbeat";
 import FriendsPanel from "./FriendsPanel.jsx";
 import "./sw-register";
@@ -115,7 +119,9 @@ export default function App() {
   useEffect(() => {
     if (!running) return;
     timerRef.current = setInterval(() => setSeconds((s) => (s > 0 ? s - 1 : 0)), 1000);
-    return () => clearInterval(timerRef.current);
+    return () => clearInterval(timerRef.current  <Analytics />
+);
+
   }, [running]);
 
   useEffect(() => {
@@ -816,4 +822,3 @@ function SurveyGate(){
   if (!open) return null;
   return <SurveyModal onDone={() => setOpen(false)} />;
 }
-
