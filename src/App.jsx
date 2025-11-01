@@ -251,26 +251,26 @@ export default function App() {
             <button className="text-sm px-3 py-1 rounded-full border hover:bg-white" onClick={() => setStartDate(todayKey())}>
               Reset Week 1
             </button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           </div>
         </header>
 
         <div className="rounded-2xl border bg-white">
           <div className="p-4 border-b">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             <div className="font-semibold">Focus-Core Target (Job Search)</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           </div>
           <div className="p-4 space-y-2 text-sm">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             <div>Daily target: <strong>{stage.daily}</strong></div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             <div>Prompt: {stage.prompt}</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             <div className="pt-2 text-xs text-neutral-500">Tip: one Focus-Core burst before 10 AM = win the day.</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
 
         <div className="w-full">
@@ -294,7 +294,7 @@ export default function App() {
                 {t.label}
               </button>
             ))}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           </div>
 
           {activeTab === "focus" && (
@@ -321,7 +321,7 @@ export default function App() {
                   >
                     Add
                   </button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
                 <TaskList
                   tasks={tasks.filter((t) => t.bucket === "focusCore")}
@@ -330,37 +330,37 @@ export default function App() {
                 />
 
                 <div className="mt-4 rounded-xl border p-3">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   <div className="font-medium text-sm mb-2">Application Log + Quality</div>
                   <div className="flex flex-col md:flex-row gap-2 mb-2">
                     <input className="input flex-1" placeholder="Company" value={appDraft.company} onChange={(e) => setAppDraft({ ...appDraft, company: e.target.value })} />
                     <input className="input flex-1" placeholder="Role" value={appDraft.role} onChange={(e) => setAppDraft({ ...appDraft, role: e.target.value })} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   </div>
                   <div className="flex flex-wrap gap-3 text-sm mb-2">
                     <label className="chip"><input type="checkbox" checked={appDraft.resume} onChange={(e) => setAppDraft({ ...appDraft, resume: e.target.checked })} /> Tailored resume</label>
                     <label className="chip"><input type="checkbox" checked={appDraft.cover} onChange={(e) => setAppDraft({ ...appDraft, cover: e.target.checked })} /> Cover letter</label>
                     <label className="chip"><input type="checkbox" checked={appDraft.referral} onChange={(e) => setAppDraft({ ...appDraft, referral: e.target.checked })} /> Referral attempt</label>
                     <button className="btn" onClick={addApp}>Add Application</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   </div>
                   <div className="space-y-2 max-h-48 overflow-auto">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     {apps.length === 0 && <div className="text-xs text-neutral-500">No applications yet. Log your first one!</div>}
                     {apps.map((a) => (
                       <div key={a.id} className="flex items-center justify-between rounded-lg border p-2">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                         <div className="text-sm"><span className="font-medium">{a.company}</span> — {a.role || "Role"} <span className="text-neutral-400">({a.date})</span></div>
                         <div className="flex items-center gap-2 text-xs">
                           <Badge score={qualityScore(a)} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                         </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                       </div>
                     ))}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
               </Box>
 
@@ -378,25 +378,25 @@ export default function App() {
                     }}
                   />
                   <button className="btn" onClick={() => { const el = document.querySelector("#addPlay"); el && el.focus(); }}>Add</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
                 <TaskList tasks={tasks.filter((t) => t.bucket === "focusPlay")} setTasks={setTasks} />
 
                 <div className="mt-4 grid md:grid-cols-2 gap-3">
                   <div className="rounded-xl border p-3 relative overflow-hidden">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     <div className="font-medium text-sm mb-2">Focus Fire</div>
                     <Fire level={fireLevel} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     <div className="text-xs text-neutral-500 mt-2">Each 25:00 sprint levels up your flame (resets daily).</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   </div>
                   <div className="rounded-xl border p-3">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     <div className="font-medium text-sm mb-2">Focus Timer (25/5)</div>
                     <div className="text-4xl font-mono tabular-nums">
                       {String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <button className="btn" onClick={() => setRunning((r) => !r)}>{running ? "Pause" : "Start"}</button>
@@ -404,16 +404,16 @@ export default function App() {
                       <button className="btn-ghost" onClick={() => resetTimer(5)}>Break 5</button>
                       <button className="btn-ghost" onClick={() => resetTimer(15)}>Break 15</button>
                       <button className="btn-outline" onClick={startFocus25}>Start Focus 25 &rarr;</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     <div className="text-xs text-neutral-500 mt-2">Complete = +1 Fire level and Focus pillar.</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
               </Box>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             </div>
           )}
 
@@ -422,12 +422,12 @@ export default function App() {
               <Box title="Body & Life Maintenance">
                 <ToggleRow label="Mom Call (walk)" hint="Morning connection + sunlight" checked={anchors.momCall} onChange={(v) => setAnchors({ ...anchors, momCall: v })} />
                 <button className="btn mt-2" onClick={logMomCall}>Log Mom Call today</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 <div className="text-xs text-neutral-500 mt-1">Weekly streak: {weekStreak(momCalls)}/7</div>
                 <div className="h-px bg-neutral-200 my-3" />
                 <ToggleRow label="GF Call (10–12)" hint="Connection & oxytocin" checked={anchors.gfCall} onChange={(v) => setAnchors({ ...anchors, gfCall: v })} />
                 <button className="btn mt-2" onClick={logGfCall}>Log GF Call today</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 <div className="text-xs text-neutral-500 mt-1">Weekly streak: {weekStreak(gfCalls)}/7</div>
                 <div className="h-px bg-neutral-200 my-3" />
                 <ToggleRow label="Badminton (8:30–10:30 PM)" hint="Physical + social anchor" checked={anchors.badminton} onChange={(v) => setAnchors({ ...anchors, badminton: v })} />
@@ -449,7 +449,7 @@ export default function App() {
                 <Recipe name="Frozen Stir-fry + Protein" mins={12} steps="Pan + oil; toss frozen veg + tofu/chicken; sauce." />
                 <Recipe name="Microwave Rice + Canned Beans" mins={6} steps="Heat rice pouch; rinse beans; add salsa & cheese." />
               </Box>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             </div>
           )}
 
@@ -459,14 +459,14 @@ export default function App() {
                 <p className="text-sm">Intentional recharge: audiobooks (20–30m), music, creative play. Pivot here for a short refill, then return to Focus.</p>
                 <textarea className="input min-h-[120px] mt-2" placeholder="Idea parking lot — capture to stop hijacks..." />
               </Box>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             </div>
           )}
 
           {activeTab === "rituals" && (
             <div className="mt-4 grid md:grid-cols-2 gap-4">
               <Box title="Morning Ritual (Hindu practice)">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 <div className="text-sm text-neutral-700 mb-2">Order (~12 minutes total)</div>
                 <CheckRow label="Snana — Shower" hint="Signal: new day begins now" checked={ritualShower} onChange={setRitualShower} />
                 <CheckRow label="Pranayama — 12 breaths" hint="Box 4-4-6 or alternate-nostril" checked={ritualBreath} onChange={setRitualBreath} />
@@ -475,7 +475,7 @@ export default function App() {
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   <button className="btn" disabled={ritualDone} onClick={completeRitual}>{ritualDone ? "Completed today" : "Mark ritual done today"}</button>
                   <span className="text-xs text-neutral-500">Weekly ritual streak: {ritualWeekly}/7</span>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
                 <label className="chip mt-2">
                   <input type="checkbox" checked={autoFocusAfterRitual} onChange={(e) => setAutoFocusAfterRitual(e.target.checked)} /> Auto-start Focus 25 after ritual
@@ -487,11 +487,11 @@ export default function App() {
                   <button className="btn" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Start now</button>
                   <button className="btn-secondary" onClick={() => alert("Try: 3 rounds Surya Namaskar + 12 calm breaths + 5-min mantra.")}>Guide</button>
                   <button className="btn-ghost" onClick={() => alert("Suggestion: Read one shloka from the Gita, reflect one line.")}>Reading idea</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
                 <p className="text-xs text-neutral-500 mt-3">Tip: pair this before your Mom-call walk for sunlight + connection.</p>
               </Box>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             </div>
           )}
 
@@ -508,9 +508,9 @@ export default function App() {
                     {tilt ? "Tilt-to-drain: ON" : "Tilt-to-drain: OFF"}
                   </button>
                   <button className="btn-outline" onClick={() => setHydration(0)}>Reset</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 <div className="text-xs text-neutral-500 mt-2">Scale: 100% is roughly 2.5 L. Tip phone (tilt &gt; 60 degrees) to leak slowly.</div>
               </Box>
 
@@ -521,7 +521,7 @@ export default function App() {
                   <li>Hydration 60% + Badminton = bonus glow tomorrow</li>
                 </ul>
               </Box>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             </div>
           )}
 
@@ -529,31 +529,31 @@ export default function App() {
             <div className="mt-4 grid md:grid-cols-2 gap-4">
               <Box title="Daily Momentum (7-day)">
                 <div className="grid grid-cols-8 gap-2 items-center mb-2">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   <div className="text-xs text-neutral-500">Today</div>
                   <MeterRow date={new Date()} data={todayMeter} onToggle={(k, v) => markMeter(k, v)} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
                 {Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(new Date()), i)).map((d) => {
                   const key = d.toISOString().slice(0, 10);
                   const md = meter[key] || { focus: false, maintenance: false, joy: false, regulation: false };
                   return (
                     <div key={key} className="grid grid-cols-8 gap-2 items-center">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                       <div className="text-xs text-neutral-500">{d.toLocaleDateString(undefined, { weekday: "short" })}</div>
                       <MeterRow date={d} data={md} onToggle={(k, v) => markMeter(k, v, key)} readOnly={key !== today} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                     </div>
                   );
                 })}
                 <div className="flex items-center gap-3 pt-3">
                   <div className="w-48 h-2 bg-neutral-200 rounded-full overflow-hidden">
                     <div className="h-full bg-neutral-900" style={{ width: `${(completion / 4) * 100}%` }} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                   <div className="text-xs text-neutral-600">{completion}/4 pillars today</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
                 </div>
               </Box>
 
@@ -563,16 +563,17 @@ export default function App() {
                 <p className="text-xs text-neutral-500 mb-2">Finish one Focus-Core action before the GF call to bank the day.</p>
                 <textarea className="input min-h-[160px]" placeholder="3-line reflection: What I finished? What gave me energy? What will I tweak?" />
               </Box>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
             </div>
           )}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
 
         <footer className="text-xs text-neutral-500 pt-2">Designed for oscillation, not rigidity. Surf your cycles. — NeuroDivulge</footer>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+        <SurveyGate />
+  
       </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -581,16 +582,16 @@ export default function App() {
 function Box({ title, children }) {
   return (
     <div className="rounded-2xl border bg-white p-4">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       <div className="font-semibold mb-2">{title}</div>
       {children}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
 
 function TaskList({ tasks, setTasks, markDone }) {
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
   if (tasks.length === 0) return <div className="text-sm text-neutral-500">No tasks yet. Add the smallest next action.</div>;
   const toggle = (id) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
   const remove = (id) => setTasks((ts) => ts.filter((t) => t.id !== id));
@@ -610,10 +611,10 @@ function TaskList({ tasks, setTasks, markDone }) {
             <span className={clsx("text-sm", t.done && "line-through text-neutral-400")}>{t.text}</span>
           </label>
           <button className="btn-ghost" onClick={() => remove(t.id)}>Delete</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
       ))}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -635,14 +636,14 @@ function ToggleRow({ label, hint, checked, onChange }) {
   return (
     <div className="flex items-center justify-between rounded-xl border p-3 bg-white">
       <div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         <div className="text-sm font-medium">{label}</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         {hint && <div className="text-xs text-neutral-500">{hint}</div>}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       </div>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -651,14 +652,14 @@ function Recipe({ name, mins, steps }) {
   return (
     <div className="flex items-start justify-between gap-2 rounded-xl border p-3 bg-white mb-2">
       <div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         <div className="font-medium text-sm">{name}</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         <div className="text-xs text-neutral-600">{steps}</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       </div>
       <span className="text-xs px-2 py-1 rounded-full border bg-neutral-50">~{mins} min</span>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -676,9 +677,9 @@ function Fire({ level }) {
       ))}
       <div className="ml-3 text-sm text-neutral-700">
         Level: <span className="font-medium">{labels[level]}</span>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -707,7 +708,7 @@ function MeterRow({ date, data, onToggle, readOnly }) {
           {data[c.key] ? "Done" : c.label}
         </button>
       ))}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -719,9 +720,9 @@ function WaterTank({ hydration }) {
         className="absolute bottom-0 left-0 right-0 transition-all"
         style={{ height: `${hydration}%`, background: "linear-gradient(180deg, rgba(99,179,237,0.9), rgba(59,130,246,0.9))" }}
       />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-neutral-600">{Math.round(hydration)}%</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -735,18 +736,18 @@ function CheckRow({ label, hint, checked, onChange }) {
   return (
     <div className="flex items-center justify-between rounded-xl border p-3 bg-white">
       <div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         <div className="text-sm font-medium">{label}</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         {hint && <div className="text-xs text-neutral-500">{hint}</div>}
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       </div>
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
       />
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
 }
@@ -760,38 +761,38 @@ function SurveyModal({ onDone }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-4 w-full max-w-md space-y-3">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         <div className="text-lg font-semibold">Tune NeuroDivulge</div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         <div className="text-sm">We’ll personalize default tabs and reminders. You can change this anytime.</div>
 
         <div className="text-sm">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           <div className="font-medium mb-1">Natural energy</div>
           <select className="input" value={sleep} onChange={e=>setSleep(e.target.value)}>
             <option value="morning">Morning person</option>
             <option value="night-owl">Night owl</option>
             <option value="both">Either</option>
           </select>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
 
         <div className="text-sm">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           <div className="font-medium mb-1">Focus areas</div>
           <label className="chip"><input type="checkbox" checked={goals.job} onChange={e=>setGoals({...goals, job:e.target.checked})}/> Job search</label>
           <label className="chip ml-2"><input type="checkbox" checked={goals.fitness} onChange={e=>setGoals({...goals, fitness:e.target.checked})}/> Fitness</label>
           <label className="chip ml-2"><input type="checkbox" checked={goals.spiritual} onChange={e=>setGoals({...goals, spiritual:e.target.checked})}/> Spiritual</label>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
 
         <div className="text-sm">
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
           <div className="font-medium mb-1">Mindful substances (tailor prompts)</div>
           <label className="chip"><input type="checkbox" checked={use.cannabis} onChange={e=>setUse({...use, cannabis:e.target.checked})}/> Cannabis</label>
           <label className="chip ml-2"><input type="checkbox" checked={use.alcohol} onChange={e=>setUse({...use, alcohol:e.target.checked})}/> Alcohol</label>
           <label className="chip ml-2"><input type="checkbox" checked={use.nicotine} onChange={e=>setUse({...use, nicotine:e.target.checked})}/> Nicotine</label>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
@@ -800,11 +801,18 @@ function SurveyModal({ onDone }) {
             localStorage.setItem("nd.survey", JSON.stringify({ sleep, goals, use, ts: Date.now() }));
             onDone();
           }}>Save</button>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
         </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
       </div>
-  {showSurvey && <SurveyModal onDone={()=>setShowSurvey(false)} />}
+  
     </div>
   );
+}
+
+/* ---- Self-contained SurveyGate (no external state names needed) ---- */
+function SurveyGate(){
+  const [open, setOpen] = useState(() => !localStorage.getItem("nd.survey"));
+  if (!open) return null;
+  return <SurveyModal onDone={() => setOpen(false)} />;
 }
