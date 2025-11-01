@@ -4,10 +4,17 @@
   --nd-accent: #6b7280;
   --nd-blur: 0px;
 }
+
 .nd-env {
   background: var(--nd-bg);
   color: var(--nd-fg);
   transition: background 300ms ease, color 300ms ease, filter 300ms ease;
 }
-.nd-env .muted { color: var(--nd-accent); }
-.nd-blur { filter: blur(var(--nd-blur)); }
+
+.nd-env .muted {
+  color: var(--nd-accent);
+}
+
+.nd-blur {
+  filter: blur(var(--nd-blur));
+}

@@ -1,8 +1,7 @@
 // ND build marker
-console.info('ND build:', '__ND_BUILD_ID__', '2025-11-01T18:32:52Z-nd-hotfix');
+console.info("ND build:", "__ND_BUILD_ID__", "2025-11-01T18:32:52Z-nd-hotfix");
 import { ND_BUILD } from "./version";
-import { useHeartbeat } from "./useHeartbeat";
-import FriendsPanel from "./FriendsPanel.jsx";
+import FriendsPanel from "./components/FriendsPanel.jsx";
 import "./sw-register";
 import { track } from "./analytics";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -77,34 +76,84 @@ function beep(freq = 880, dur = 350) {
 }
 
 const STAGES = [
-  { w: 1, label: "Start", daily: "15 min resume/LinkedIn", prompt: "Open your resume and make one improvement." },
-  { w: 2, label: "Expand", daily: "Apply to 1 job", prompt: "Find 1 role and submit a quality application." },
-  { w: 3, label: "Network", daily: "1 message + 1 app", prompt: "DM a contact/recruiter and apply to 1 role." },
-  { w: 4, label: "Scale", daily: "2 applications", prompt: "Send 2 quality applications today." },
-  { w: 5, label: "Compound", daily: "2 apps + 1 follow-up", prompt: "Apply to 2 roles and follow up with someone." },
+  {
+    w: 1,
+    label: "Start",
+    daily: "15 min resume/LinkedIn",
+    prompt: "Open your resume and make one improvement.",
+  },
+  {
+    w: 2,
+    label: "Expand",
+    daily: "Apply to 1 job",
+    prompt: "Find 1 role and submit a quality application.",
+  },
+  {
+    w: 3,
+    label: "Network",
+    daily: "1 message + 1 app",
+    prompt: "DM a contact/recruiter and apply to 1 role.",
+  },
+  {
+    w: 4,
+    label: "Scale",
+    daily: "2 applications",
+    prompt: "Send 2 quality applications today.",
+  },
+  {
+    w: 5,
+    label: "Compound",
+    daily: "2 apps + 1 follow-up",
+    prompt: "Apply to 2 roles and follow up with someone.",
+  },
 ];
 
 export default function App() {
-  const [showSurvey, setShowSurvey] = useState(!localStorage.getItem("nd.survey"));
+  const [showSurvey, setShowSurvey] = useState(
+    !localStorage.getItem("nd.survey")
+  );
   // App meta
   const [startDate, setStartDate] = useLocalStorage("nd.startDate", todayKey());
   const [activeTab, setActiveTab] = useLocalStorage("nd.activeTab", "rituals");
 
   // Tasks
   const [tasks, setTasks] = useLocalStorage("nd.tasks", []);
-  const addTask = (text, bucket) => { if (!text || !text.trim()) return; setTasks(ts => [{ id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())), text: text.trim(), done: false, bucket }, ...ts]); };
- // [{id,text,done,bucket}]
+  const addTask = (text, bucket) => {
+    if (!text || !text.trim()) return;
+    setTasks((ts) => [
+      {
+        id: crypto.randomUUID
+          ? crypto.randomUUID()
+          : String(Date.now() + Math.random()),
+        text: text.trim(),
+        done: false,
+        bucket,
+      },
+      ...ts,
+    ]);
+  };
+  // [{id,text,done,bucket}]
 
   // Momentum Meter
   const [meter, setMeter] = useLocalStorage("nd.meter", {}); // dateKey -> {focus,maintenance,joy,regulation}
 
   // Rituals
   const [rituals, setRituals] = useLocalStorage("nd.rituals", {}); // dateKey -> true/false
-  const [autoFocusAfterRitual, setAutoFocusAfterRitual] = useLocalStorage("nd.autoFocusAfterRitual", true);
+  const [autoFocusAfterRitual, setAutoFocusAfterRitual] = useLocalStorage(
+    "nd.autoFocusAfterRitual",
+    true
+  );
 
   // Anchors & Cannabis
-  const [anchors, setAnchors] = useLocalStorage("nd.anchors", { momCall: true, gfCall: true, badminton: true });
-  const [cannabisIntent, setCannabisIntent] = useLocalStorage("nd.cannabisIntent", false);
+  const [anchors, setAnchors] = useLocalStorage("nd.anchors", {
+    momCall: true,
+    gfCall: true,
+    badminton: true,
+  });
+  const [cannabisIntent, setCannabisIntent] = useLocalStorage(
+    "nd.cannabisIntent",
+    false
+  );
 
   // Hydration
   const [hydration, setHydration] = useLocalStorage("nd.hydration", 0); // 0..100 (100 ~ 2.5L)
@@ -112,12 +161,18 @@ export default function App() {
   // Focus timer + Fire
   const [seconds, setSeconds] = useState(25 * 60);
   const [running, setRunning] = useState(false);
-  const [completedSprints, setCompletedSprints] = useLocalStorage("nd.sprints." + todayKey(), 0);
+  const [completedSprints, setCompletedSprints] = useLocalStorage(
+    "nd.sprints." + todayKey(),
+    0
+  );
   const timerRef = useRef(null);
 
   useEffect(() => {
     if (!running) return;
-    timerRef.current = setInterval(() => setSeconds((s) => (s > 0 ? s - 1 : 0)), 1000);
+    timerRef.current = setInterval(
+      () => setSeconds((s) => (s > 0 ? s - 1 : 0)),
+      1000
+    );
     return () => clearInterval(timerRef.current);
   }, [running]);
 
@@ -134,7 +189,8 @@ export default function App() {
     setSeconds(min * 60);
     setRunning(false);
   }
-  function startFocus25() { track("focus_start"); 
+  function startFocus25() {
+    track("focus_start");
     resetTimer(25);
     setRunning(true);
     setActiveTab("momentum");
@@ -151,12 +207,27 @@ export default function App() {
 
   // Meter helpers
   const today = todayKey();
-  const todayMeter = meter[today] || { focus: false, maintenance: false, joy: false, regulation: false };
-  const completion = ["focus", "maintenance", "joy", "regulation"].map((k) => todayMeter[k]).filter(Boolean).length;
+  const todayMeter = meter[today] || {
+    focus: false,
+    maintenance: false,
+    joy: false,
+    regulation: false,
+  };
+  const completion = ["focus", "maintenance", "joy", "regulation"]
+    .map((k) => todayMeter[k])
+    .filter(Boolean).length;
   const markMeter = (key, val, dateKey = today) =>
     setMeter((m) => ({
       ...m,
-      [dateKey]: { ...(m[dateKey] || { focus: false, maintenance: false, joy: false, regulation: false }), [key]: val },
+      [dateKey]: {
+        ...(m[dateKey] || {
+          focus: false,
+          maintenance: false,
+          joy: false,
+          regulation: false,
+        }),
+        [key]: val,
+      },
     }));
 
   // Tabs
@@ -174,16 +245,33 @@ export default function App() {
 
   // Applications
   const [apps, setApps] = useLocalStorage("nd.apps", []); // [{id,date,company,role,resume,cover,referral}]
-  const [appDraft, setAppDraft] = useState({ company: "", role: "", resume: true, cover: false, referral: false });
+  const [appDraft, setAppDraft] = useState({
+    company: "",
+    role: "",
+    resume: true,
+    cover: false,
+    referral: false,
+  });
   const addApp = () => {
     if (!appDraft.company.trim()) return;
     const entry = { id: crypto.randomUUID(), date: today, ...appDraft };
     setApps((a) => [entry, ...a]);
-    setAppDraft({ company: "", role: "", resume: true, cover: false, referral: false }); track("application_added", { company: appDraft.company, role: appDraft.role });
+    setAppDraft({
+      company: "",
+      role: "",
+      resume: true,
+      cover: false,
+      referral: false,
+    });
+    track("application_added", {
+      company: appDraft.company,
+      role: appDraft.role,
+    });
     markMeter("focus", true);
     beep(660, 220);
   };
-  const qualityScore = (a) => (a.resume ? 1 : 0) + (a.cover ? 1 : 0) + (a.referral ? 1 : 0);
+  const qualityScore = (a) =>
+    (a.resume ? 1 : 0) + (a.cover ? 1 : 0) + (a.referral ? 1 : 0);
 
   // Calls streaks
   const [momCalls, setMomCalls] = useLocalStorage("nd.momCalls", {}); // date:true
@@ -203,7 +291,7 @@ export default function App() {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i)).reduce(
       (n, d) => n + (map[d.toISOString().slice(0, 10)] ? 1 : 0),
       0
-  );
+    );
   };
 
   // Hydration
@@ -232,7 +320,8 @@ export default function App() {
   const [ritualMantra, setRitualMantra] = useState(false);
   const [ritualYoga, setRitualYoga] = useState(false);
   const ritualDone = rituals[today] || false;
-  const completeRitual = () => { track("ritual_complete"); 
+  const completeRitual = () => {
+    track("ritual_complete");
     setRituals((r) => ({ ...r, [today]: true }));
     markMeter("maintenance", true);
     beep(880, 260);
@@ -245,35 +334,39 @@ export default function App() {
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            NeuroDivulge <span className="text-neutral-500">— momentum, not willpower</span>
+            NeuroDivulge{" "}
+            <span className="text-neutral-500">— momentum, not willpower</span>
           </h1>
           <div className="flex items-center gap-2">
             <span className="text-sm px-2 py-1 rounded-full border bg-white">
               Week {weekNumber}: {stage.label}
             </span>
-            <button className="text-sm px-3 py-1 rounded-full border hover:bg-white" onClick={() => setStartDate(todayKey())}>
+            <button
+              className="text-sm px-3 py-1 rounded-full border hover:bg-white"
+              onClick={() => setStartDate(todayKey())}
+            >
               Reset Week 1
             </button>
-  
-  {/* NeuroDivulge: community + sync + presets */}  {/* NeuroDivulge panels (auth + village + sync + presets) */}          </div>
+            {/* NeuroDivulge: community + sync + presets */}{" "}
+            {/* NeuroDivulge panels (auth + village + sync + presets) */}{" "}
+          </div>
         </header>
 
         <div className="rounded-2xl border bg-white">
           <div className="p-4 border-b">
-  
             <div className="font-semibold">Focus-Core Target (Job Search)</div>
-  
           </div>
           <div className="p-4 space-y-2 text-sm">
-  
-            <div>Daily target: <strong>{stage.daily}</strong></div>
-  
+            <div>
+              Daily target: <strong>{stage.daily}</strong>
+            </div>
+
             <div>Prompt: {stage.prompt}</div>
-  
-            <div className="pt-2 text-xs text-neutral-500">Tip: one Focus-Core burst before 10 AM = win the day.</div>
-  
+
+            <div className="pt-2 text-xs text-neutral-500">
+              Tip: one Focus-Core burst before 10 AM = win the day.
+            </div>
           </div>
-  
         </div>
 
         <div className="w-full">
@@ -291,13 +384,14 @@ export default function App() {
                 onClick={() => setActiveTab(t.key)}
                 className={clsx(
                   "px-3 py-2 rounded-xl border text-sm",
-                  activeTab === t.key ? "bg-white border-neutral-400" : "bg-white/50 border-neutral-200 hover:bg-white"
+                  activeTab === t.key
+                    ? "bg-white border-neutral-400"
+                    : "bg-white/50 border-neutral-200 hover:bg-white"
                 )}
               >
                 {t.label}
               </button>
             ))}
-  
           </div>
 
           {activeTab === "focus" && (
@@ -324,7 +418,6 @@ export default function App() {
                   >
                     Add
                   </button>
-  
                 </div>
                 <TaskList
                   tasks={tasks.filter((t) => t.bucket === "focusCore")}
@@ -333,37 +426,87 @@ export default function App() {
                 />
 
                 <div className="mt-4 rounded-xl border p-3">
-  
-                  <div className="font-medium text-sm mb-2">Application Log + Quality</div>
+                  <div className="font-medium text-sm mb-2">
+                    Application Log + Quality
+                  </div>
                   <div className="flex flex-col md:flex-row gap-2 mb-2">
-                    <input className="input flex-1" placeholder="Company" value={appDraft.company} onChange={(e) => setAppDraft({ ...appDraft, company: e.target.value })} />
-                    <input className="input flex-1" placeholder="Role" value={appDraft.role} onChange={(e) => setAppDraft({ ...appDraft, role: e.target.value })} />
-  
+                    <input
+                      className="input flex-1"
+                      placeholder="Company"
+                      value={appDraft.company}
+                      onChange={(e) =>
+                        setAppDraft({ ...appDraft, company: e.target.value })
+                      }
+                    />
+                    <input
+                      className="input flex-1"
+                      placeholder="Role"
+                      value={appDraft.role}
+                      onChange={(e) =>
+                        setAppDraft({ ...appDraft, role: e.target.value })
+                      }
+                    />
                   </div>
                   <div className="flex flex-wrap gap-3 text-sm mb-2">
-                    <label className="chip"><input type="checkbox" checked={appDraft.resume} onChange={(e) => setAppDraft({ ...appDraft, resume: e.target.checked })} /> Tailored resume</label>
-                    <label className="chip"><input type="checkbox" checked={appDraft.cover} onChange={(e) => setAppDraft({ ...appDraft, cover: e.target.checked })} /> Cover letter</label>
-                    <label className="chip"><input type="checkbox" checked={appDraft.referral} onChange={(e) => setAppDraft({ ...appDraft, referral: e.target.checked })} /> Referral attempt</label>
-                    <button className="btn" onClick={addApp}>Add Application</button>
-  
+                    <label className="chip">
+                      <input
+                        type="checkbox"
+                        checked={appDraft.resume}
+                        onChange={(e) =>
+                          setAppDraft({ ...appDraft, resume: e.target.checked })
+                        }
+                      />{" "}
+                      Tailored resume
+                    </label>
+                    <label className="chip">
+                      <input
+                        type="checkbox"
+                        checked={appDraft.cover}
+                        onChange={(e) =>
+                          setAppDraft({ ...appDraft, cover: e.target.checked })
+                        }
+                      />{" "}
+                      Cover letter
+                    </label>
+                    <label className="chip">
+                      <input
+                        type="checkbox"
+                        checked={appDraft.referral}
+                        onChange={(e) =>
+                          setAppDraft({
+                            ...appDraft,
+                            referral: e.target.checked,
+                          })
+                        }
+                      />{" "}
+                      Referral attempt
+                    </label>
+                    <button className="btn" onClick={addApp}>
+                      Add Application
+                    </button>
                   </div>
                   <div className="space-y-2 max-h-48 overflow-auto">
-  
-                    {apps.length === 0 && <div className="text-xs text-neutral-500">No applications yet. Log your first one!</div>}
+                    {apps.length === 0 && (
+                      <div className="text-xs text-neutral-500">
+                        No applications yet. Log your first one!
+                      </div>
+                    )}
                     {apps.map((a) => (
-                      <div key={a.id} className="flex items-center justify-between rounded-lg border p-2">
-  
-                        <div className="text-sm"><span className="font-medium">{a.company}</span> — {a.role || "Role"} <span className="text-neutral-400">({a.date})</span></div>
+                      <div
+                        key={a.id}
+                        className="flex items-center justify-between rounded-lg border p-2"
+                      >
+                        <div className="text-sm">
+                          <span className="font-medium">{a.company}</span> —{" "}
+                          {a.role || "Role"}{" "}
+                          <span className="text-neutral-400">({a.date})</span>
+                        </div>
                         <div className="flex items-center gap-2 text-xs">
                           <Badge score={qualityScore(a)} />
-  
                         </div>
-  
                       </div>
                     ))}
-  
                   </div>
-  
                 </div>
               </Box>
 
@@ -380,60 +523,114 @@ export default function App() {
                       }
                     }}
                   />
-                  <button className="btn" onClick={() => { const el = document.querySelector("#addPlay"); el && el.focus(); }}>Add</button>
-  
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      const el = document.querySelector("#addPlay");
+                      el && el.focus();
+                    }}
+                  >
+                    Add
+                  </button>
                 </div>
-                <TaskList tasks={tasks.filter((t) => t.bucket === "focusPlay")} setTasks={setTasks} />
+                <TaskList
+                  tasks={tasks.filter((t) => t.bucket === "focusPlay")}
+                  setTasks={setTasks}
+                />
 
                 <div className="mt-4 grid md:grid-cols-2 gap-3">
                   <div className="rounded-xl border p-3 relative overflow-hidden">
-  
                     <div className="font-medium text-sm mb-2">Focus Fire</div>
                     <Fire level={fireLevel} />
-  
-                    <div className="text-xs text-neutral-500 mt-2">Each 25:00 sprint levels up your flame (resets daily).</div>
-  
+
+                    <div className="text-xs text-neutral-500 mt-2">
+                      Each 25:00 sprint levels up your flame (resets daily).
+                    </div>
                   </div>
                   <div className="rounded-xl border p-3">
-  
-                    <div className="font-medium text-sm mb-2">Focus Timer (25/5)</div>
+                    <div className="font-medium text-sm mb-2">
+                      Focus Timer (25/5)
+                    </div>
                     <div className="text-4xl font-mono tabular-nums">
-                      {String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}
-  
+                      {String(Math.floor(seconds / 60)).padStart(2, "0")}:
+                      {String(seconds % 60).padStart(2, "0")}
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      <button className="btn" onClick={() => setRunning((r) => !r)}>{running ? "Pause" : "Start"}</button>
-                      <button className="btn-secondary" onClick={() => resetTimer(25)}>Reset 25</button>
-                      <button className="btn-ghost" onClick={() => resetTimer(5)}>Break 5</button>
-                      <button className="btn-ghost" onClick={() => resetTimer(15)}>Break 15</button>
-                      <button className="btn-outline" onClick={startFocus25}>Start Focus 25 &rarr;</button>
-  
+                      <button
+                        className="btn"
+                        onClick={() => setRunning((r) => !r)}
+                      >
+                        {running ? "Pause" : "Start"}
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        onClick={() => resetTimer(25)}
+                      >
+                        Reset 25
+                      </button>
+                      <button
+                        className="btn-ghost"
+                        onClick={() => resetTimer(5)}
+                      >
+                        Break 5
+                      </button>
+                      <button
+                        className="btn-ghost"
+                        onClick={() => resetTimer(15)}
+                      >
+                        Break 15
+                      </button>
+                      <button className="btn-outline" onClick={startFocus25}>
+                        Start Focus 25 &rarr;
+                      </button>
                     </div>
-  
-                    <div className="text-xs text-neutral-500 mt-2">Complete = +1 Fire level and Focus pillar.</div>
-  
+
+                    <div className="text-xs text-neutral-500 mt-2">
+                      Complete = +1 Fire level and Focus pillar.
+                    </div>
                   </div>
-  
                 </div>
               </Box>
-  
             </div>
           )}
 
           {activeTab === "maintenance" && (
             <div className="mt-4 grid md:grid-cols-2 gap-4">
               <Box title="Body & Life Maintenance">
-                <ToggleRow label="Mom Call (walk)" hint="Morning connection + sunlight" checked={anchors.momCall} onChange={(v) => setAnchors({ ...anchors, momCall: v })} />
-                <button className="btn mt-2" onClick={logMomCall}>Log Mom Call today</button>
-  
-                <div className="text-xs text-neutral-500 mt-1">Weekly streak: {weekStreak(momCalls)}/7</div>
+                <ToggleRow
+                  label="Mom Call (walk)"
+                  hint="Morning connection + sunlight"
+                  checked={anchors.momCall}
+                  onChange={(v) => setAnchors({ ...anchors, momCall: v })}
+                />
+                <button className="btn mt-2" onClick={logMomCall}>
+                  Log Mom Call today
+                </button>
+
+                <div className="text-xs text-neutral-500 mt-1">
+                  Weekly streak: {weekStreak(momCalls)}/7
+                </div>
                 <div className="h-px bg-neutral-200 my-3" />
-                <ToggleRow label="GF Call (10–12)" hint="Connection & oxytocin" checked={anchors.gfCall} onChange={(v) => setAnchors({ ...anchors, gfCall: v })} />
-                <button className="btn mt-2" onClick={logGfCall}>Log GF Call today</button>
-  
-                <div className="text-xs text-neutral-500 mt-1">Weekly streak: {weekStreak(gfCalls)}/7</div>
+                <ToggleRow
+                  label="GF Call (10–12)"
+                  hint="Connection & oxytocin"
+                  checked={anchors.gfCall}
+                  onChange={(v) => setAnchors({ ...anchors, gfCall: v })}
+                />
+                <button className="btn mt-2" onClick={logGfCall}>
+                  Log GF Call today
+                </button>
+
+                <div className="text-xs text-neutral-500 mt-1">
+                  Weekly streak: {weekStreak(gfCalls)}/7
+                </div>
                 <div className="h-px bg-neutral-200 my-3" />
-                <ToggleRow label="Badminton (8:30–10:30 PM)" hint="Physical + social anchor" checked={anchors.badminton} onChange={(v) => setAnchors({ ...anchors, badminton: v })} />
+                <ToggleRow
+                  label="Badminton (8:30–10:30 PM)"
+                  hint="Physical + social anchor"
+                  checked={anchors.badminton}
+                  onChange={(v) => setAnchors({ ...anchors, badminton: v })}
+                />
                 <div className="h-px bg-neutral-200 my-3" />
                 <label className="chip">
                   <input
@@ -443,58 +640,134 @@ export default function App() {
                       setCannabisIntent(e.target.checked);
                       markMeter("regulation", e.target.checked);
                     }}
-                  /> Intentional cannabis today
+                  />{" "}
+                  Intentional cannabis today
                 </label>
               </Box>
 
               <Box title="Lazy-Cook Toolkit">
-                <Recipe name="Eggs + Toast + Fruit" mins={8} steps="Boil/poach eggs while toasting bread; add fruit or yogurt." />
-                <Recipe name="Frozen Stir-fry + Protein" mins={12} steps="Pan + oil; toss frozen veg + tofu/chicken; sauce." />
-                <Recipe name="Microwave Rice + Canned Beans" mins={6} steps="Heat rice pouch; rinse beans; add salsa & cheese." />
+                <Recipe
+                  name="Eggs + Toast + Fruit"
+                  mins={8}
+                  steps="Boil/poach eggs while toasting bread; add fruit or yogurt."
+                />
+                <Recipe
+                  name="Frozen Stir-fry + Protein"
+                  mins={12}
+                  steps="Pan + oil; toss frozen veg + tofu/chicken; sauce."
+                />
+                <Recipe
+                  name="Microwave Rice + Canned Beans"
+                  mins={6}
+                  steps="Heat rice pouch; rinse beans; add salsa & cheese."
+                />
               </Box>
-  
             </div>
           )}
 
           {activeTab === "joy" && (
             <div className="mt-4">
               <Box title="Joy & Recharge">
-                <p className="text-sm">Intentional recharge: audiobooks (20–30m), music, creative play. Pivot here for a short refill, then return to Focus.</p>
-                <textarea className="input min-h-[120px] mt-2" placeholder="Idea parking lot — capture to stop hijacks..." />
+                <p className="text-sm">
+                  Intentional recharge: audiobooks (20–30m), music, creative
+                  play. Pivot here for a short refill, then return to Focus.
+                </p>
+                <textarea
+                  className="input min-h-[120px] mt-2"
+                  placeholder="Idea parking lot — capture to stop hijacks..."
+                />
               </Box>
-  
             </div>
           )}
 
           {activeTab === "rituals" && (
             <div className="mt-4 grid md:grid-cols-2 gap-4">
               <Box title="Morning Ritual (Hindu practice)">
-  
-                <div className="text-sm text-neutral-700 mb-2">Order (~12 minutes total)</div>
-                <CheckRow label="Snana — Shower" hint="Signal: new day begins now" checked={ritualShower} onChange={setRitualShower} />
-                <CheckRow label="Pranayama — 12 breaths" hint="Box 4-4-6 or alternate-nostril" checked={ritualBreath} onChange={setRitualBreath} />
-                <CheckRow label="Mantra/Reading — 5 min" hint="Gayatri japa or one Gita verse" checked={ritualMantra} onChange={setRitualMantra} />
-                <CheckRow label="Surya/Yoga — 3–5 min" hint="3 Surya Namaskar rounds or brief sit" checked={ritualYoga} onChange={setRitualYoga} />
+                <div className="text-sm text-neutral-700 mb-2">
+                  Order (~12 minutes total)
+                </div>
+                <CheckRow
+                  label="Snana — Shower"
+                  hint="Signal: new day begins now"
+                  checked={ritualShower}
+                  onChange={setRitualShower}
+                />
+                <CheckRow
+                  label="Pranayama — 12 breaths"
+                  hint="Box 4-4-6 or alternate-nostril"
+                  checked={ritualBreath}
+                  onChange={setRitualBreath}
+                />
+                <CheckRow
+                  label="Mantra/Reading — 5 min"
+                  hint="Gayatri japa or one Gita verse"
+                  checked={ritualMantra}
+                  onChange={setRitualMantra}
+                />
+                <CheckRow
+                  label="Surya/Yoga — 3–5 min"
+                  hint="3 Surya Namaskar rounds or brief sit"
+                  checked={ritualYoga}
+                  onChange={setRitualYoga}
+                />
                 <div className="flex flex-wrap items-center gap-2 mt-3">
-                  <button className="btn" disabled={ritualDone} onClick={completeRitual}>{ritualDone ? "Completed today" : "Mark ritual done today"}</button>
-                  <span className="text-xs text-neutral-500">Weekly ritual streak: {ritualWeekly}/7</span>
-  
+                  <button
+                    className="btn"
+                    disabled={ritualDone}
+                    onClick={completeRitual}
+                  >
+                    {ritualDone ? "Completed today" : "Mark ritual done today"}
+                  </button>
+                  <span className="text-xs text-neutral-500">
+                    Weekly ritual streak: {ritualWeekly}/7
+                  </span>
                 </div>
                 <label className="chip mt-2">
-                  <input type="checkbox" checked={autoFocusAfterRitual} onChange={(e) => setAutoFocusAfterRitual(e.target.checked)} /> Auto-start Focus 25 after ritual
+                  <input
+                    type="checkbox"
+                    checked={autoFocusAfterRitual}
+                    onChange={(e) => setAutoFocusAfterRitual(e.target.checked)}
+                  />{" "}
+                  Auto-start Focus 25 after ritual
                 </label>
               </Box>
 
               <Box title="Quick Presets">
                 <div className="flex flex-wrap gap-2 text-sm">
-                  <button className="btn" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Start now</button>
-                  <button className="btn-secondary" onClick={() => alert("Try: 3 rounds Surya Namaskar + 12 calm breaths + 5-min mantra.")}>Guide</button>
-                  <button className="btn-ghost" onClick={() => alert("Suggestion: Read one shloka from the Gita, reflect one line.")}>Reading idea</button>
-  
+                  <button
+                    className="btn"
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
+                  >
+                    Start now
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={() =>
+                      alert(
+                        "Try: 3 rounds Surya Namaskar + 12 calm breaths + 5-min mantra."
+                      )
+                    }
+                  >
+                    Guide
+                  </button>
+                  <button
+                    className="btn-ghost"
+                    onClick={() =>
+                      alert(
+                        "Suggestion: Read one shloka from the Gita, reflect one line."
+                      )
+                    }
+                  >
+                    Reading idea
+                  </button>
                 </div>
-                <p className="text-xs text-neutral-500 mt-3">Tip: pair this before your Mom-call walk for sunlight + connection.</p>
+                <p className="text-xs text-neutral-500 mt-3">
+                  Tip: pair this before your Mom-call walk for sunlight +
+                  connection.
+                </p>
               </Box>
-  
             </div>
           )}
 
@@ -503,18 +776,39 @@ export default function App() {
               <Box title="Hydration Game">
                 <WaterTank hydration={hydration} />
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <button className="btn" onClick={() => drink(250)}>Drink 250ml</button>
-                  <button className="btn-secondary" onClick={() => drink(500)}>+500ml</button>
-                  <button className="btn-ghost" onClick={() => drain(300)}>Drain 300ml</button>
-                  <button className="btn-ghost" onClick={() => drain(600)}>Drain 600ml</button>
-                  <button className={clsx("btn-outline", tilt && "!bg-neutral-900 !text-white")} onClick={() => setTilt((t) => !t)}>
+                  <button className="btn" onClick={() => drink(250)}>
+                    Drink 250ml
+                  </button>
+                  <button className="btn-secondary" onClick={() => drink(500)}>
+                    +500ml
+                  </button>
+                  <button className="btn-ghost" onClick={() => drain(300)}>
+                    Drain 300ml
+                  </button>
+                  <button className="btn-ghost" onClick={() => drain(600)}>
+                    Drain 600ml
+                  </button>
+                  <button
+                    className={clsx(
+                      "btn-outline",
+                      tilt && "!bg-neutral-900 !text-white"
+                    )}
+                    onClick={() => setTilt((t) => !t)}
+                  >
                     {tilt ? "Tilt-to-drain: ON" : "Tilt-to-drain: OFF"}
                   </button>
-                  <button className="btn-outline" onClick={() => setHydration(0)}>Reset</button>
-  
+                  <button
+                    className="btn-outline"
+                    onClick={() => setHydration(0)}
+                  >
+                    Reset
+                  </button>
                 </div>
-  
-                <div className="text-xs text-neutral-500 mt-2">Scale: 100% is roughly 2.5 L. Tip phone (tilt &gt; 60 degrees) to leak slowly.</div>
+
+                <div className="text-xs text-neutral-500 mt-2">
+                  Scale: 100% is roughly 2.5 L. Tip phone (tilt &gt; 60 degrees)
+                  to leak slowly.
+                </div>
               </Box>
 
               <Box title="Mini Quests (coming soon)">
@@ -524,7 +818,6 @@ export default function App() {
                   <li>Hydration 60% + Badminton = bonus glow tomorrow</li>
                 </ul>
               </Box>
-  
             </div>
           )}
 
@@ -532,51 +825,93 @@ export default function App() {
             <div className="mt-4 grid md:grid-cols-2 gap-4">
               <Box title="Daily Momentum (7-day)">
                 <div className="grid grid-cols-8 gap-2 items-center mb-2">
-  
                   <div className="text-xs text-neutral-500">Today</div>
-                  <MeterRow date={new Date()} data={todayMeter} onToggle={(k, v) => markMeter(k, v)} />
-  
+                  <MeterRow
+                    date={new Date()}
+                    data={todayMeter}
+                    onToggle={(k, v) => markMeter(k, v)}
+                  />
                 </div>
-                {Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(new Date()), i)).map((d) => {
+                {Array.from({ length: 7 }, (_, i) =>
+                  addDays(startOfWeek(new Date()), i)
+                ).map((d) => {
                   const key = d.toISOString().slice(0, 10);
-                  const md = meter[key] || { focus: false, maintenance: false, joy: false, regulation: false };
+                  const md = meter[key] || {
+                    focus: false,
+                    maintenance: false,
+                    joy: false,
+                    regulation: false,
+                  };
                   return (
-                    <div key={key} className="grid grid-cols-8 gap-2 items-center">
-  
-                      <div className="text-xs text-neutral-500">{d.toLocaleDateString(undefined, { weekday: "short" })}</div>
-                      <MeterRow date={d} data={md} onToggle={(k, v) => markMeter(k, v, key)} readOnly={key !== today} />
-  
+                    <div
+                      key={key}
+                      className="grid grid-cols-8 gap-2 items-center"
+                    >
+                      <div className="text-xs text-neutral-500">
+                        {d.toLocaleDateString(undefined, { weekday: "short" })}
+                      </div>
+                      <MeterRow
+                        date={d}
+                        data={md}
+                        onToggle={(k, v) => markMeter(k, v, key)}
+                        readOnly={key !== today}
+                      />
                     </div>
                   );
                 })}
                 <div className="flex items-center gap-3 pt-3">
                   <div className="w-48 h-2 bg-neutral-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-neutral-900" style={{ width: `${(completion / 4) * 100}%` }} />
-  
+                    <div
+                      className="h-full bg-neutral-900"
+                      style={{ width: `${(completion / 4) * 100}%` }}
+                    />
                   </div>
-  
-                  <div className="text-xs text-neutral-600">{completion}/4 pillars today</div>
-  
+
+                  <div className="text-xs text-neutral-600">
+                    {completion}/4 pillars today
+                  </div>
                 </div>
               </Box>
 
               <FriendsPanel />
 
               <Box title="Notes">
-                <p className="text-xs text-neutral-500 mb-2">Finish one Focus-Core action before the GF call to bank the day.</p>
-                <textarea className="input min-h-[160px]" placeholder="3-line reflection: What I finished? What gave me energy? What will I tweak?" />
+                <p className="text-xs text-neutral-500 mb-2">
+                  Finish one Focus-Core action before the GF call to bank the
+                  day.
+                </p>
+                <textarea
+                  className="input min-h-[160px]"
+                  placeholder="3-line reflection: What I finished? What gave me energy? What will I tweak?"
+                />
               </Box>
-  
             </div>
           )}
-  
         </div>
 
-        <footer className="text-xs text-neutral-500 pt-2">Designed for oscillation, not rigidity. Surf your cycles. — NeuroDivulge</footer>
+        <footer className="text-xs text-neutral-500 pt-2">
+          Designed for oscillation, not rigidity. Surf your cycles. —
+          NeuroDivulge
+        </footer>
         <SurveyGate />
-  
+        <BuildStamp />
       </div>
-  
+    </div>
+  );
+}
+
+function BuildStamp() {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        right: 10,
+        bottom: 8,
+        opacity: 0.4,
+        fontSize: 11,
+      }}
+    >
+      ND {ND_BUILD}
     </div>
   );
 }
@@ -585,23 +920,31 @@ export default function App() {
 function Box({ title, children }) {
   return (
     <div className="rounded-2xl border bg-white p-4">
-  
       <div className="font-semibold mb-2">{title}</div>
       {children}
-  
     </div>
   );
 }
 
 function TaskList({ tasks, setTasks, markDone }) {
-  
-  if (tasks.length === 0) return <div className="text-sm text-neutral-500">No tasks yet. Add the smallest next action.</div>;
-  const toggle = (id) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  if (tasks.length === 0)
+    return (
+      <div className="text-sm text-neutral-500">
+        No tasks yet. Add the smallest next action.
+      </div>
+    );
+  const toggle = (id) =>
+    setTasks((ts) =>
+      ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+    );
   const remove = (id) => setTasks((ts) => ts.filter((t) => t.id !== id));
   return (
     <div className="space-y-2">
       {tasks.map((t) => (
-        <div key={t.id} className="flex items-center justify-between rounded-xl border p-2">
+        <div
+          key={t.id}
+          className="flex items-center justify-between rounded-xl border p-2"
+        >
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -611,19 +954,33 @@ function TaskList({ tasks, setTasks, markDone }) {
                 if (!t.done && markDone) markDone();
               }}
             />
-            <span className={clsx("text-sm", t.done && "line-through text-neutral-400")}>{t.text}</span>
+            <span
+              className={clsx(
+                "text-sm",
+                t.done && "line-through text-neutral-400"
+              )}
+            >
+              {t.text}
+            </span>
           </label>
-          <button className="btn-ghost" onClick={() => remove(t.id)}>Delete</button>
-  
+          <button className="btn-ghost" onClick={() => remove(t.id)}>
+            Delete
+          </button>
         </div>
       ))}
-  
     </div>
   );
 }
 
 function Badge({ score }) {
-  const label = score === 3 ? "Quality 3/3" : score === 2 ? "Quality 2/3" : score === 1 ? "Quality 1/3" : "Quality 0/3";
+  const label =
+    score === 3
+      ? "Quality 3/3"
+      : score === 2
+      ? "Quality 2/3"
+      : score === 1
+      ? "Quality 1/3"
+      : "Quality 0/3";
   const cls =
     score === 3
       ? "bg-emerald-100 text-emerald-800 border-emerald-300"
@@ -632,21 +989,26 @@ function Badge({ score }) {
       : score === 1
       ? "bg-neutral-100 text-neutral-700 border-neutral-300"
       : "bg-red-100 text-red-800 border-red-300";
-  return <span className={clsx("text-xs px-2 py-1 rounded-full border", cls)}>{label}</span>;
+  return (
+    <span className={clsx("text-xs px-2 py-1 rounded-full border", cls)}>
+      {label}
+    </span>
+  );
 }
 
 function ToggleRow({ label, hint, checked, onChange }) {
   return (
     <div className="flex items-center justify-between rounded-xl border p-3 bg-white">
       <div>
-  
         <div className="text-sm font-medium">{label}</div>
-  
+
         {hint && <div className="text-xs text-neutral-500">{hint}</div>}
-  
       </div>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-  
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
     </div>
   );
 }
@@ -655,14 +1017,13 @@ function Recipe({ name, mins, steps }) {
   return (
     <div className="flex items-start justify-between gap-2 rounded-xl border p-3 bg-white mb-2">
       <div>
-  
         <div className="font-medium text-sm">{name}</div>
-  
+
         <div className="text-xs text-neutral-600">{steps}</div>
-  
       </div>
-      <span className="text-xs px-2 py-1 rounded-full border bg-neutral-50">~{mins} min</span>
-  
+      <span className="text-xs px-2 py-1 rounded-full border bg-neutral-50">
+        ~{mins} min
+      </span>
     </div>
   );
 }
@@ -674,15 +1035,18 @@ function Fire({ level }) {
       {[0, 1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className={clsx("w-8 rounded-t-lg transition-all", i <= level ? "bg-[linear-gradient(180deg,#fbbf24,#ef4444)]" : "bg-neutral-200")}
+          className={clsx(
+            "w-8 rounded-t-lg transition-all",
+            i <= level
+              ? "bg-[linear-gradient(180deg,#fbbf24,#ef4444)]"
+              : "bg-neutral-200"
+          )}
           style={{ height: `${(i + 1) * 18}px` }}
         />
       ))}
       <div className="ml-3 text-sm text-neutral-700">
         Level: <span className="font-medium">{labels[level]}</span>
-  
       </div>
-  
     </div>
   );
 }
@@ -703,7 +1067,9 @@ function MeterRow({ date, data, onToggle, readOnly }) {
           onClick={() => !readOnly && onToggle(c.key, !data[c.key])}
           className={clsx(
             "h-10 rounded-xl border text-sm flex items-center justify-center select-none",
-            data[c.key] ? "bg-emerald-100 border-emerald-300" : "bg-white border-neutral-200",
+            data[c.key]
+              ? "bg-emerald-100 border-emerald-300"
+              : "bg-white border-neutral-200",
             readOnly && "opacity-60 cursor-not-allowed"
           )}
           title={`${c.label} — ${date.toDateString()}`}
@@ -711,7 +1077,6 @@ function MeterRow({ date, data, onToggle, readOnly }) {
           {data[c.key] ? "Done" : c.label}
         </button>
       ))}
-  
     </div>
   );
 }
@@ -721,11 +1086,16 @@ function WaterTank({ hydration }) {
     <div className="relative h-64 w-full max-w-xs border-2 border-neutral-300 rounded-2xl overflow-hidden bg-white">
       <div
         className="absolute bottom-0 left-0 right-0 transition-all"
-        style={{ height: `${hydration}%`, background: "linear-gradient(180deg, rgba(99,179,237,0.9), rgba(59,130,246,0.9))" }}
+        style={{
+          height: `${hydration}%`,
+          background:
+            "linear-gradient(180deg, rgba(99,179,237,0.9), rgba(59,130,246,0.9))",
+        }}
       />
-  
-      <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-neutral-600">{Math.round(hydration)}%</div>
-  
+
+      <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-neutral-600">
+        {Math.round(hydration)}%
+      </div>
     </div>
   );
 }
@@ -739,18 +1109,15 @@ function CheckRow({ label, hint, checked, onChange }) {
   return (
     <div className="flex items-center justify-between rounded-xl border p-3 bg-white">
       <div>
-  
         <div className="text-sm font-medium">{label}</div>
-  
+
         {hint && <div className="text-xs text-neutral-500">{hint}</div>}
-  
       </div>
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
       />
-  
     </div>
   );
 }
@@ -758,67 +1125,127 @@ function CheckRow({ label, hint, checked, onChange }) {
 // --- First-Run Survey Modal (very light) ---
 function SurveyModal({ onDone }) {
   const [sleep, setSleep] = useState("night-owl");
-  const [goals, setGoals] = useState({ job: true, fitness: true, spiritual: true });
-  const [use, setUse] = useState({ cannabis: true, alcohol: false, nicotine: false });
+  const [goals, setGoals] = useState({
+    job: true,
+    fitness: true,
+    spiritual: true,
+  });
+  const [use, setUse] = useState({
+    cannabis: true,
+    alcohol: false,
+    nicotine: false,
+  });
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-4 w-full max-w-md space-y-3">
-  
         <div className="text-lg font-semibold">Tune NeuroDivulge</div>
-  
-        <div className="text-sm">We’ll personalize default tabs and reminders. You can change this anytime.</div>
 
         <div className="text-sm">
-  
+          We’ll personalize default tabs and reminders. You can change this
+          anytime.
+        </div>
+
+        <div className="text-sm">
           <div className="font-medium mb-1">Natural energy</div>
-          <select className="input" value={sleep} onChange={e=>setSleep(e.target.value)}>
+          <select
+            className="input"
+            value={sleep}
+            onChange={(e) => setSleep(e.target.value)}
+          >
             <option value="morning">Morning person</option>
             <option value="night-owl">Night owl</option>
             <option value="both">Either</option>
           </select>
-  
         </div>
 
         <div className="text-sm">
-  
           <div className="font-medium mb-1">Focus areas</div>
-          <label className="chip"><input type="checkbox" checked={goals.job} onChange={e=>setGoals({...goals, job:e.target.checked})}/> Job search</label>
-          <label className="chip ml-2"><input type="checkbox" checked={goals.fitness} onChange={e=>setGoals({...goals, fitness:e.target.checked})}/> Fitness</label>
-          <label className="chip ml-2"><input type="checkbox" checked={goals.spiritual} onChange={e=>setGoals({...goals, spiritual:e.target.checked})}/> Spiritual</label>
-  
+          <label className="chip">
+            <input
+              type="checkbox"
+              checked={goals.job}
+              onChange={(e) => setGoals({ ...goals, job: e.target.checked })}
+            />{" "}
+            Job search
+          </label>
+          <label className="chip ml-2">
+            <input
+              type="checkbox"
+              checked={goals.fitness}
+              onChange={(e) =>
+                setGoals({ ...goals, fitness: e.target.checked })
+              }
+            />{" "}
+            Fitness
+          </label>
+          <label className="chip ml-2">
+            <input
+              type="checkbox"
+              checked={goals.spiritual}
+              onChange={(e) =>
+                setGoals({ ...goals, spiritual: e.target.checked })
+              }
+            />{" "}
+            Spiritual
+          </label>
         </div>
 
         <div className="text-sm">
-  
-          <div className="font-medium mb-1">Mindful substances (tailor prompts)</div>
-          <label className="chip"><input type="checkbox" checked={use.cannabis} onChange={e=>setUse({...use, cannabis:e.target.checked})}/> Cannabis</label>
-          <label className="chip ml-2"><input type="checkbox" checked={use.alcohol} onChange={e=>setUse({...use, alcohol:e.target.checked})}/> Alcohol</label>
-          <label className="chip ml-2"><input type="checkbox" checked={use.nicotine} onChange={e=>setUse({...use, nicotine:e.target.checked})}/> Nicotine</label>
-  
+          <div className="font-medium mb-1">
+            Mindful substances (tailor prompts)
+          </div>
+          <label className="chip">
+            <input
+              type="checkbox"
+              checked={use.cannabis}
+              onChange={(e) => setUse({ ...use, cannabis: e.target.checked })}
+            />{" "}
+            Cannabis
+          </label>
+          <label className="chip ml-2">
+            <input
+              type="checkbox"
+              checked={use.alcohol}
+              onChange={(e) => setUse({ ...use, alcohol: e.target.checked })}
+            />{" "}
+            Alcohol
+          </label>
+          <label className="chip ml-2">
+            <input
+              type="checkbox"
+              checked={use.nicotine}
+              onChange={(e) => setUse({ ...use, nicotine: e.target.checked })}
+            />{" "}
+            Nicotine
+          </label>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <button className="btn-secondary" onClick={onDone}>Skip</button>
-          <button className="btn" onClick={()=>{
-            localStorage.setItem("nd.survey", JSON.stringify({ sleep, goals, use, ts: Date.now() }));
-            onDone();
-          }}>Save</button>
-  
+          <button className="btn-secondary" onClick={onDone}>
+            Skip
+          </button>
+          <button
+            className="btn"
+            onClick={() => {
+              localStorage.setItem(
+                "nd.survey",
+                JSON.stringify({ sleep, goals, use, ts: Date.now() })
+              );
+              onDone();
+            }}
+          >
+            Save
+          </button>
         </div>
-  
       </div>
-  
     </div>
   );
 }
 
 /* ---- Self-contained SurveyGate (no external state names needed) ---- */
-function SurveyGate(){
+function SurveyGate() {
   const [open, setOpen] = useState(() => !localStorage.getItem("nd.survey"));
   if (!open) return null;
   return <SurveyModal onDone={() => setOpen(false)} />;
 }
-
-{/* Build stamp (debug) */}
-  <div style={{position:"fixed",right:10,bottom:8,opacity:.4,fontSize:11}}>ND {ND_BUILD}</div>
