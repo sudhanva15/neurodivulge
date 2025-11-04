@@ -1,0 +1,6 @@
+-- Migration: maintenance logs & targets (placeholder)
+-- Reason: V2 Maintenance grid
+-- NOTE: content will be patched via oboe
+BEGIN;
+-- TODO: CREATE TABLE maintenance_logs, maintenance_targets
+COMMIT;

@@ -1,10 +1,16 @@
 // ND build marker
 console.info("ND build:", "__ND_BUILD_ID__", "2025-11-01T18:32:52Z-nd-hotfix");
 import { ND_BUILD } from "./version";
-import FriendsPanel from "./components/FriendsPanel.jsx";
+import NDPanelStrip from "./components/NDPanelStrip.jsx";
+import { useSupabase } from "./supabase/useSupabase";
+import ReflectionLauncher from "./components/ReflectionLauncher.jsx";
 import "./sw-register";
 import { track } from "./analytics";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import useConversionBonus from "./hooks/useConversionBonus";
+import Maintenance from "./pages/Maintenance.jsx";
+import Profile from "./pages/Profile.jsx";
+import Village from "./pages/gamify/Village.jsx";
 
 /**
  * NeuroDivulge v3 (ASCII-safe)
@@ -75,6 +81,35 @@ function beep(freq = 880, dur = 350) {
   } catch {}
 }
 
+function resetWeek() {
+  // Clear app-owned weekly/local state
+  const keys = [
+    "nd.pillars",
+    "nd.momentum",
+    "nd.rituals",
+    "nd.focusCore",
+    "nd.lastSyncDay",
+    "nd.lastSyncAt",
+    "nd.survey",
+    "nd.hydration",
+    "nd.notes",
+    "nd.sprints." + todayKey(),
+    "nd.meter",
+    "nd.tasks",
+    "nd.apps",
+    "nd.momCalls",
+    "nd.gfCalls",
+  ];
+  try {
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {}
+  // Reset start date to today and reload to re-render defaults
+  try {
+    localStorage.setItem("nd.startDate", JSON.stringify(todayKey()));
+  } catch {}
+  location.reload();
+}
+
 const STAGES = [
   {
     w: 1,
@@ -116,6 +151,10 @@ export default function App() {
   const [startDate, setStartDate] = useLocalStorage("nd.startDate", todayKey());
   const [activeTab, setActiveTab] = useLocalStorage("nd.activeTab", "rituals");
 
+  const { user, sessionLoading, signInWithGoogle, signOut, supabase } =
+    (typeof useSupabase === "function" ? useSupabase() : {}) || {};
+  const syncOn = Boolean(user && supabase);
+
   // Tasks
   const [tasks, setTasks] = useLocalStorage("nd.tasks", []);
   const addTask = (text, bucket) => {
@@ -136,6 +175,52 @@ export default function App() {
 
   // Momentum Meter
   const [meter, setMeter] = useLocalStorage("nd.meter", {}); // dateKey -> {focus,maintenance,joy,regulation}
+  // Meter helpers (moved above effects to avoid using markMeter before initialization)
+  const today = todayKey();
+  const todayMeter = meter[today] || {
+    focus: false,
+    maintenance: false,
+    joy: false,
+    regulation: false,
+  };
+  const completion = ["focus", "maintenance", "joy", "regulation"]
+    .map((k) => todayMeter[k])
+    .filter(Boolean).length;
+  const markMeter = (key, val, dateKey = today) =>
+    setMeter((m) => {
+      const next = {
+        ...m,
+        [dateKey]: {
+          ...(m[dateKey] || {
+            focus: false,
+            maintenance: false,
+            joy: false,
+            regulation: false,
+          }),
+          [key]: val,
+        },
+      };
+      // Mirror to Supabase if signed in
+      try {
+        if (syncOn) {
+          const row = next[dateKey];
+          supabase
+            ?.from("momentum")
+            .upsert({
+              user_id: user.id,
+              date_key: dateKey,
+              focus: row.focus,
+              maintenance: row.maintenance,
+              joy: row.joy,
+              regulation: row.regulation,
+              updated_at: new Date().toISOString(),
+            })
+            .then(() => {})
+            .catch(() => {});
+        }
+      } catch {}
+      return next;
+    });
 
   // Rituals
   const [rituals, setRituals] = useLocalStorage("nd.rituals", {}); // dateKey -> true/false
@@ -166,6 +251,8 @@ export default function App() {
     0
   );
   const timerRef = useRef(null);
+  const coreInputRef = useRef(null);
+  const playInputRef = useRef(null);
 
   useEffect(() => {
     if (!running) return;
@@ -205,31 +292,6 @@ export default function App() {
     return { stage: STAGES[Math.min(STAGES.length - 1, w - 1)], weekNumber: w };
   }, [startDate]);
 
-  // Meter helpers
-  const today = todayKey();
-  const todayMeter = meter[today] || {
-    focus: false,
-    maintenance: false,
-    joy: false,
-    regulation: false,
-  };
-  const completion = ["focus", "maintenance", "joy", "regulation"]
-    .map((k) => todayMeter[k])
-    .filter(Boolean).length;
-  const markMeter = (key, val, dateKey = today) =>
-    setMeter((m) => ({
-      ...m,
-      [dateKey]: {
-        ...(m[dateKey] || {
-          focus: false,
-          maintenance: false,
-          joy: false,
-          regulation: false,
-        }),
-        [key]: val,
-      },
-    }));
-
   // Tabs
   const tabs = [
     { key: "focus", label: "Focus" },
@@ -242,6 +304,8 @@ export default function App() {
 
   // Fire level
   const fireLevel = Math.min(4, completedSprints);
+  // Conversion bonus chips (dopamine -> focus)
+  const { chips: conversionChips } = useConversionBonus();
 
   // Applications
   const [apps, setApps] = useLocalStorage("nd.apps", []); // [{id,date,company,role,resume,cover,referral}]
@@ -329,26 +393,56 @@ export default function App() {
   };
   const ritualWeekly = weekStreak(rituals);
 
+  // Boot-time effect to hydrate local survey from server when logged in
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!supabase || !user) return;
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("survey")
+          .eq("id", user.id)
+          .single();
+        if (!error && data?.survey) {
+          try {
+            localStorage.setItem("nd.survey", JSON.stringify(data.survey));
+          } catch {}
+        }
+      } catch {}
+    })();
+  }, [supabase, user]);
+
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-900 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            NeuroDivulge{" "}
-            <span className="text-neutral-500">— momentum, not willpower</span>
-          </h1>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              NeuroDivulge{" "}
+              <span className="text-neutral-500">
+                — momentum, not willpower
+              </span>
+            </h1>
+            <div className="mt-1">
+              <ClockBadge />
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-sm px-2 py-1 rounded-full border bg-white">
               Week {weekNumber}: {stage.label}
             </span>
             <button
               className="text-sm px-3 py-1 rounded-full border hover:bg-white"
-              onClick={() => setStartDate(todayKey())}
+              onClick={resetWeek}
             >
               Reset Week 1
             </button>
-            {/* NeuroDivulge: community + sync + presets */}{" "}
-            {/* NeuroDivulge panels (auth + village + sync + presets) */}{" "}
+            <AccountChip
+              sessionLoading={sessionLoading}
+              user={user}
+              onSignIn={signInWithGoogle}
+              onSignOut={signOut}
+            />
           </div>
         </header>
 
@@ -377,6 +471,7 @@ export default function App() {
               { key: "joy", label: "Joy" },
               { key: "rituals", label: "Rituals" },
               { key: "gamify", label: "Gamify" },
+              { key: "profile", label: "Profile" },
               { key: "momentum", label: "Momentum" },
             ].map((t) => (
               <button
@@ -400,6 +495,7 @@ export default function App() {
                 <div className="flex gap-2 mb-2">
                   <input
                     id="addCore"
+                    ref={coreInputRef}
                     className="input"
                     placeholder="Add job-search task..."
                     onKeyDown={(e) => {
@@ -412,8 +508,14 @@ export default function App() {
                   <button
                     className="btn"
                     onClick={() => {
-                      const el = document.querySelector("#addCore");
-                      el && el.focus();
+                      const el = coreInputRef.current;
+                      const val = (el?.value || "").trim();
+                      if (val) {
+                        addTask(val, "focusCore");
+                        if (el) el.value = "";
+                      } else {
+                        el && el.focus();
+                      }
                     }}
                   >
                     Add
@@ -514,6 +616,7 @@ export default function App() {
                 <div className="flex gap-2 mb-2">
                   <input
                     id="addPlay"
+                    ref={playInputRef}
                     className="input"
                     placeholder="Add project task..."
                     onKeyDown={(e) => {
@@ -526,8 +629,14 @@ export default function App() {
                   <button
                     className="btn"
                     onClick={() => {
-                      const el = document.querySelector("#addPlay");
-                      el && el.focus();
+                      const el = playInputRef.current;
+                      const val = (el?.value || "").trim();
+                      if (val) {
+                        addTask(val, "focusPlay");
+                        if (el) el.value = "";
+                      } else {
+                        el && el.focus();
+                      }
                     }}
                   >
                     Add
@@ -595,73 +704,8 @@ export default function App() {
           )}
 
           {activeTab === "maintenance" && (
-            <div className="mt-4 grid md:grid-cols-2 gap-4">
-              <Box title="Body & Life Maintenance">
-                <ToggleRow
-                  label="Mom Call (walk)"
-                  hint="Morning connection + sunlight"
-                  checked={anchors.momCall}
-                  onChange={(v) => setAnchors({ ...anchors, momCall: v })}
-                />
-                <button className="btn mt-2" onClick={logMomCall}>
-                  Log Mom Call today
-                </button>
-
-                <div className="text-xs text-neutral-500 mt-1">
-                  Weekly streak: {weekStreak(momCalls)}/7
-                </div>
-                <div className="h-px bg-neutral-200 my-3" />
-                <ToggleRow
-                  label="GF Call (10–12)"
-                  hint="Connection & oxytocin"
-                  checked={anchors.gfCall}
-                  onChange={(v) => setAnchors({ ...anchors, gfCall: v })}
-                />
-                <button className="btn mt-2" onClick={logGfCall}>
-                  Log GF Call today
-                </button>
-
-                <div className="text-xs text-neutral-500 mt-1">
-                  Weekly streak: {weekStreak(gfCalls)}/7
-                </div>
-                <div className="h-px bg-neutral-200 my-3" />
-                <ToggleRow
-                  label="Badminton (8:30–10:30 PM)"
-                  hint="Physical + social anchor"
-                  checked={anchors.badminton}
-                  onChange={(v) => setAnchors({ ...anchors, badminton: v })}
-                />
-                <div className="h-px bg-neutral-200 my-3" />
-                <label className="chip">
-                  <input
-                    type="checkbox"
-                    checked={cannabisIntent}
-                    onChange={(e) => {
-                      setCannabisIntent(e.target.checked);
-                      markMeter("regulation", e.target.checked);
-                    }}
-                  />{" "}
-                  Intentional cannabis today
-                </label>
-              </Box>
-
-              <Box title="Lazy-Cook Toolkit">
-                <Recipe
-                  name="Eggs + Toast + Fruit"
-                  mins={8}
-                  steps="Boil/poach eggs while toasting bread; add fruit or yogurt."
-                />
-                <Recipe
-                  name="Frozen Stir-fry + Protein"
-                  mins={12}
-                  steps="Pan + oil; toss frozen veg + tofu/chicken; sauce."
-                />
-                <Recipe
-                  name="Microwave Rice + Canned Beans"
-                  mins={6}
-                  steps="Heat rice pouch; rinse beans; add salsa & cheese."
-                />
-              </Box>
+            <div className="mt-4">
+              <Maintenance />
             </div>
           )}
 
@@ -742,26 +786,6 @@ export default function App() {
                   >
                     Start now
                   </button>
-                  <button
-                    className="btn-secondary"
-                    onClick={() =>
-                      alert(
-                        "Try: 3 rounds Surya Namaskar + 12 calm breaths + 5-min mantra."
-                      )
-                    }
-                  >
-                    Guide
-                  </button>
-                  <button
-                    className="btn-ghost"
-                    onClick={() =>
-                      alert(
-                        "Suggestion: Read one shloka from the Gita, reflect one line."
-                      )
-                    }
-                  >
-                    Reading idea
-                  </button>
                 </div>
                 <p className="text-xs text-neutral-500 mt-3">
                   Tip: pair this before your Mom-call walk for sunlight +
@@ -818,6 +842,17 @@ export default function App() {
                   <li>Hydration 60% + Badminton = bonus glow tomorrow</li>
                 </ul>
               </Box>
+              <div className="md:col-span-2">
+                <Box title="Village">
+                  <Village />
+                </Box>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "profile" && (
+            <div className="mt-4">
+              <Profile />
             </div>
           )}
 
@@ -873,7 +908,21 @@ export default function App() {
                 </div>
               </Box>
 
-              <FriendsPanel />
+              <div className="space-y-4">
+                <ReflectionLauncher />
+                <NDPanelStrip />
+              </div>
+              {conversionChips.length > 0 && (
+                <Box title="Bonuses">
+                  <ul className="text-sm flex flex-wrap gap-2">
+                    {conversionChips.map((c, i) => (
+                      <li key={i} className="px-3 py-1 rounded-full border">
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
 
               <Box title="Notes">
                 <p className="text-xs text-neutral-500 mb-2">
@@ -913,6 +962,49 @@ function BuildStamp() {
     >
       ND {ND_BUILD}
     </div>
+  );
+}
+
+function AccountChip({ sessionLoading, user, onSignIn, onSignOut }) {
+  if (sessionLoading) return null;
+  if (!user) {
+    return (
+      <button
+        className="text-sm px-3 py-1 rounded-full border hover:bg-white"
+        onClick={() => onSignIn?.()}
+      >
+        Sign in with Google
+      </button>
+    );
+  }
+  const name = user?.user_metadata?.full_name || user?.email || "Me";
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs px-2 py-1 rounded-full border bg-white">
+        {name}
+      </span>
+      <button
+        className="text-xs px-2 py-1 rounded-full border hover:bg-white"
+        onClick={() => onSignOut?.()}
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}
+
+function ClockBadge() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 100);
+    return () => clearInterval(id);
+  }, []);
+  const t = now.toLocaleTimeString([], { hour12: false });
+  const ms = String(now.getMilliseconds()).padStart(3, "0");
+  return (
+    <span className="text-[11px] px-2 py-1 rounded-full border bg-white/80 font-mono tabular-nums inline-block w-[96px] text-center">
+      {t}.{ms}
+    </span>
   );
 }
 
@@ -1124,6 +1216,8 @@ function CheckRow({ label, hint, checked, onChange }) {
 
 // --- First-Run Survey Modal (very light) ---
 function SurveyModal({ onDone }) {
+  const { supabase, user } =
+    (typeof useSupabase === "function" ? useSupabase() : {}) || {};
   const [sleep, setSleep] = useState("night-owl");
   const [goals, setGoals] = useState({
     job: true,
@@ -1227,11 +1321,22 @@ function SurveyModal({ onDone }) {
           </button>
           <button
             className="btn"
-            onClick={() => {
-              localStorage.setItem(
-                "nd.survey",
-                JSON.stringify({ sleep, goals, use, ts: Date.now() })
-              );
+            onClick={async () => {
+              const data = { sleep, goals, use, ts: Date.now() };
+              try {
+                if (supabase && user) {
+                  await supabase.from("profiles").upsert({
+                    id: user.id,
+                    survey: data,
+                    updated_at: new Date().toISOString(),
+                  });
+                  try {
+                    localStorage.removeItem("nd.survey");
+                  } catch {}
+                } else {
+                  localStorage.setItem("nd.survey", JSON.stringify(data));
+                }
+              } catch {}
               onDone();
             }}
           >

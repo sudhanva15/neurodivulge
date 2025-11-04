@@ -1,0 +1,6 @@
+-- Migration: village_invites (placeholder)
+-- Reason: V2 share/join code
+-- NOTE: content will be patched via oboe
+BEGIN;
+-- TODO: CREATE TABLE village_invites
+COMMIT;

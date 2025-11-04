@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node -e \"require('fs').writeFileSync('public/nd-build.txt', new Date().toISOString()+'-nd')\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -12,6 +13,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.78.0",
     "@vercel/analytics": "^1.5.0",
+    "posthog-js": "^1.285.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

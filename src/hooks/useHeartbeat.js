@@ -2,8 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useSupabase } from "../supabase/useSupabase";
 const LS_SETTINGS_KEY = "nd.settings.v1";
 
+// helpers
+const clampMinutes = (v) => Math.min(5, Math.max(1, Number(v || 5)));
+const getClient = (sb) => (sb?.from ? sb : sb?.client?.from ? sb.client : null);
+
 export function useHeartbeat() {
-  const { supabase, user } = (typeof useSupabase === "function" ? useSupabase() : { supabase: null, user: null });
+  const ctx =
+    typeof useSupabase === "function"
+      ? useSupabase()
+      : { client: null, user: null };
+  const client = getClient(ctx?.supabase || ctx?.client) || null;
+  const user = ctx?.user || null;
   const [friends, setFriends] = useState([]);
   const [me, setMe] = useState({ email: "", status: "ok", minutes: 5 });
   const [friendStatuses, setFriendStatuses] = useState([]);
@@ -18,51 +27,120 @@ export function useHeartbeat() {
         setMe({
           email: s.email || "",
           status: s.heartbeatStatus || "ok",
-          minutes: Math.min(5, Math.max(1, Number(s.heartbeatMinutes || 5)))
+          minutes: clampMinutes(s.heartbeatMinutes),
         });
         setFriends(Array.isArray(s.friends) ? s.friends : []);
       }
     } catch {}
   }, []);
 
+  // seed email from signed-in user if empty
+  useEffect(() => {
+    try {
+      if (user?.email && !me.email) {
+        setMe((m) => ({ ...m, email: user.email }));
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email]);
+
   // upsert my heartbeat periodically
   useEffect(() => {
-    if (!supabase || !user?.id || !me.email) return;
+    if (!client || !user?.id || !me.email) return;
+    let stopped = false;
+
     const send = async () => {
-      await supabase.from("heartbeats").upsert({
-        user_id: user.id,
-        email: me.email,
-        status: me.status,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "user_id" });
+      try {
+        await client.from("heartbeats").upsert(
+          {
+            user_id: user.id,
+            email: me.email,
+            status: me.status,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+      } catch (_) {
+        /* silent; UI can show manual sync errors elsewhere */
+      }
     };
+
+    // fire immediately, then on interval
     send();
     clearInterval(timerRef.current);
-    timerRef.current = setInterval(send, me.minutes * 60 * 1000);
-    return () => clearInterval(timerRef.current);
-  }, [supabase, user?.id, me.email, me.status, me.minutes]);
+    timerRef.current = setInterval(() => {
+      if (!stopped) send();
+    }, clampMinutes(me.minutes) * 60 * 1000);
+
+    return () => {
+      stopped = true;
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+    };
+  }, [client, user?.id, me.email, me.status, me.minutes]);
 
   // fetch friends
   const refresh = async () => {
-    if (!supabase || (friends||[]).length === 0) { setFriendStatuses([]); return; }
-    const lower = friends.map(e => e.toLowerCase());
-    const { data, error } = await supabase
-      .from("heartbeat_lookup")
-      .select("email_key,status,updated_at");
-    if (error) return;
+    const list = Array.isArray(friends) ? friends : [];
+    if (!client || list.length === 0) {
+      setFriendStatuses([]);
+      return;
+    }
+    const lower = list
+      .map((e) => String(e || "").toLowerCase())
+      .filter(Boolean);
+    if (lower.length === 0) {
+      setFriendStatuses([]);
+      return;
+    }
     const now = Date.now();
+
+    // Try the lookup view first for speed; fall back to heartbeats table.
+    let rows = null;
+    try {
+      const { data, error } = await client
+        .from("heartbeat_lookup")
+        .select("email_key,status,updated_at")
+        .in("email_key", lower);
+      if (error) throw error;
+      rows = data || [];
+    } catch {
+      // fallback
+      const { data } = await client
+        .from("heartbeats")
+        .select("email,status,updated_at");
+      rows = (data || [])
+        .filter((r) => lower.includes(String(r.email || "").toLowerCase()))
+        .map((r) => ({
+          email_key: String(r.email || "").toLowerCase(),
+          status: r.status,
+          updated_at: r.updated_at,
+        }));
+    }
+
     const map = new Map();
-    for (const row of data) {
-      if (!lower.includes(row.email_key)) continue;
-      const ageMin = (now - new Date(row.updated_at).getTime()) / 60000;
-      map.set(row.email_key, {
-        email: row.email_key,
-        status: row.status,
-        updated_at: row.updated_at,
-        active: ageMin <= 10
+    for (const row of rows) {
+      const key = String(row.email_key || "").toLowerCase();
+      const updated = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+      const ageMin = updated ? (now - updated) / 60000 : Infinity;
+      map.set(key, {
+        email: key,
+        status: row.status || "unknown",
+        updated_at: row.updated_at || null,
+        active: ageMin <= 10,
       });
     }
-    setFriendStatuses(lower.map(e => map.get(e) || { email: e, status: "unknown", updated_at: null, active: false }));
+    setFriendStatuses(
+      lower.map(
+        (e) =>
+          map.get(e) || {
+            email: e,
+            status: "unknown",
+            updated_at: null,
+            active: false,
+          }
+      )
+    );
   };
 
   return { friendStatuses, refresh, me, friends };
